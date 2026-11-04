@@ -6,7 +6,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build Android APKs
+    runs-on: ubuntu-24.04
+
     permissions:
       contents: read
 
@@ -15,44 +17,64 @@ jobs:
         working-directory: Samwad_Student_Admin_Logo_Branded_Android_Source
 
     steps:
-      - name: Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Java 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-    
-            - name: Install Android platform
+      - name: Configure Android SDK
         run: |
-          echo "y" | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0""
-"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager --list_installed
 
-      - name: Configure Gradle
+      - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+          cache-read-only: false
 
-      - name: Install icon tools
-        run: python3 -m pip install Pillow
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --user Pillow
 
-      - name: Generate Samwad launcher icons
-        run: python3 scripts/prepare_icons.py
+      - name: Prepare original Samwad logo
+        run: |
+          python3 scripts/prepare_icons.py
 
-      - name: Build both APKs
-        run: gradle --no-daemon :app:assembleStudentDebug :app:assembleAdminDebug
+      - name: Build Student Debug APK
+        run: |
+          gradle --no-daemon --stacktrace :app:assembleStudentDebug
+
+      - name: Build Admin Debug APK
+        run: |
+          gradle --no-daemon --stacktrace :app:assembleAdminDebug
+
+      - name: Verify APK files
+        run: |
+          test -f app/build/outputs/apk/student/debug/app-student-debug.apk
+          test -f app/build/outputs/apk/admin/debug/app-admin-debug.apk
+          ls -lh app/build/outputs/apk/student/debug/
+          ls -lh app/build/outputs/apk/admin/debug/
 
       - name: Upload Student APK
         uses: actions/upload-artifact@v4
         with:
-          name: samwad-student-apk
-          path: Samwad_Student_Admin_Logo_Branded_Android_Source/app/build/outputs/apk/student/debug/*.apk
+          name: Samwad-Student-APK
+          path: Samwad_Student_Admin_Logo_Branded_Android_Source/app/build/outputs/apk/student/debug/app-student-debug.apk
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Upload Admin APK
         uses: actions/upload-artifact@v4
         with:
-          name: samwad-admin-apk
-          path: Samwad_Student_Admin_Logo_Branded_Android_Source/app/build/outputs/apk/admin/debug/*.apk
+          name: Samwad-Admin-APK
+          path: Samwad_Student_Admin_Logo_Branded_Android_Source/app/build/outputs/apk/admin/debug/app-admin-debug.apk
+          if-no-files-found: error
+          retention-days: 30
