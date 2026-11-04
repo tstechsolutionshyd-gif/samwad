@@ -1,0 +1,57 @@
+
+name: Build Samwad Student and Admin APKs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: Samwad_Student_Admin_Logo_Branded_Android_Source
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configure Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Configure Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Install icon tools
+        run: python3 -m pip install Pillow
+
+      - name: Generate Samwad launcher icons
+        run: python3 scripts/prepare_icons.py
+
+      - name: Build both APKs
+        run: gradle --no-daemon :app:assembleStudentDebug :app:assembleAdminDebug
+
+      - name: Upload Student APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: samwad-student-apk
+          path: Samwad_Student_Admin_Logo_Branded_Android_Source/app/build/outputs/apk/student/debug/*.apk
+
+      - name: Upload Admin APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: samwad-admin-apk
+          path: Samwad_Student_Admin_Logo_Branded_Android_Source/app/build/outputs/apk/admin/debug/*.apk
