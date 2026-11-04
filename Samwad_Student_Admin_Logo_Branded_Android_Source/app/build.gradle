@@ -1,32 +1,9 @@
-plugins { id 'com.android.application' }
+
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    // Release signing is only activated when keystore settings are supplied from
-    // environment variables; never commit secrets or a release keystore.
-    def releaseKeyPath = System.getenv('SAMWAD_KEYSTORE_PATH')
-    def releaseKeyPassword = System.getenv('SAMWAD_KEYSTORE_PASSWORD')
-    def releaseAlias = System.getenv('SAMWAD_KEY_ALIAS')
-    def releaseAliasPassword = System.getenv('SAMWAD_KEY_PASSWORD')
-
-    signingConfigs {
-        if (releaseKeyPath && releaseKeyPassword && releaseAlias && releaseAliasPassword) {
-            release {
-                storeFile file(releaseKeyPath)
-                storePassword releaseKeyPassword
-                keyAlias releaseAlias
-                keyPassword releaseAliasPassword
-            }
-        }
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            shrinkResources false
-            if (releaseKeyPath && releaseKeyPassword && releaseAlias && releaseAliasPassword) {
-                signingConfig signingConfigs.release
-            }
-        }
-    }
     namespace 'in.samwad.learning'
     compileSdk 35
 
@@ -40,35 +17,61 @@ android {
     }
 
     flavorDimensions 'audience'
+
     productFlavors {
         student {
             dimension 'audience'
             applicationIdSuffix '.student'
             resValue 'string', 'app_name', 'Samwad Student'
-            buildConfigField 'String', 'START_URL', '"
-productFlavors {
-    student {
-        dimension 'audience'
-        applicationIdSuffix '.student'
-        resValue 'string', 'app_name', 'Samwad Student'
-        buildConfigField 'String', 'START_URL', '"https://portal.tscreativesanddigitalmarketing.online/student/login"'
-    }
-    admin {
-        dimension 'audience'
-        applicationIdSuffix '.admin'
-        resValue 'string', 'app_name', 'Samwad Admin'
-        buildConfigField 'String', 'START_URL', '"https://portal.tscreativesanddigitalmarketing.online/admin/login"'
-    }
-}
-"'
+            buildConfigField 'String', 'START_URL', '"https://portal.tscreativesanddigitalmarketing.online/student/login"'
         }
+
         admin {
             dimension 'audience'
             applicationIdSuffix '.admin'
             resValue 'string', 'app_name', 'Samwad Admin'
-            buildConfigField 'String', 'START_URL', '"https://preview--samwad-learning-feed.apper.so/admin/login"'
+            buildConfigField 'String', 'START_URL', '"https://portal.tscreativesanddigitalmarketing.online/admin/login"'
         }
     }
-    buildFeatures { buildConfig true }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+
+    signingConfigs {
+        if (System.getenv('SAMWAD_KEYSTORE_PATH') &&
+            System.getenv('SAMWAD_KEYSTORE_PASSWORD') &&
+            System.getenv('SAMWAD_KEY_ALIAS') &&
+            System.getenv('SAMWAD_KEY_PASSWORD')) {
+            release {
+                storeFile file(System.getenv('SAMWAD_KEYSTORE_PATH'))
+                storePassword System.getenv('SAMWAD_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('SAMWAD_KEY_ALIAS')
+                keyPassword System.getenv('SAMWAD_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+        }
+
+        release {
+            minifyEnabled false
+            shrinkResources false
+
+            if (System.getenv('SAMWAD_KEYSTORE_PATH') &&
+                System.getenv('SAMWAD_KEYSTORE_PASSWORD') &&
+                System.getenv('SAMWAD_KEY_ALIAS') &&
+                System.getenv('SAMWAD_KEY_PASSWORD')) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
