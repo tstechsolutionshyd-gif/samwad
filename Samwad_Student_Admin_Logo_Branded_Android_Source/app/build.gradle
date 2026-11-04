@@ -45,7 +45,22 @@ android {
             dimension 'audience'
             applicationIdSuffix '.student'
             resValue 'string', 'app_name', 'Samwad Student'
-            buildConfigField 'String', 'START_URL', '"https://preview--samwad-learning-feed.apper.so/student/login"'
+            buildConfigField 'String', 'START_URL', '"
+productFlavors {
+    student {
+        dimension 'audience'
+        applicationIdSuffix '.student'
+        resValue 'string', 'app_name', 'Samwad Student'
+        buildConfigField 'String', 'START_URL', '"https://portal.tscreativesanddigitalmarketing.online/student/login"'
+    }
+    admin {
+        dimension 'audience'
+        applicationIdSuffix '.admin'
+        resValue 'string', 'app_name', 'Samwad Admin'
+        buildConfigField 'String', 'START_URL', '"https://portal.tscreativesanddigitalmarketing.online/admin/login"'
+    }
+}
+"'
         }
         admin {
             dimension 'audience'
